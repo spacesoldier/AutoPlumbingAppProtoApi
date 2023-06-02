@@ -1,0 +1,19 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "@digitaloak/node-red-contrib-digitaloak-postgresql": "~0.3.2",
+        "node-red-contrib-crypto-js": "~0.1.1",
+        "node-red-contrib-kafka-client": "~0.1.0",
+        "node-red-contrib-mongodb4": "~1.8.1",
+        "node-red-contrib-postgresql": "~0.11.2",
+        "node-red-contrib-prometheus-exporter": "~1.0.5",
+        "node-red-contrib-rdkafka-secure": "~0.3.0",
+        "node-red-contrib-require": "~0.1.1",
+        "node-red-contrib-telegrambot": "~14.8.7",
+        "node-red-contrib-web-worldmap": "~2.32.0",
+        "node-red-dashboard": "~3.2.3"
+    }
+}
