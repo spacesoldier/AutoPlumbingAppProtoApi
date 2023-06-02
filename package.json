@@ -15,5 +15,11 @@
         "node-red-contrib-telegrambot": "~14.8.7",
         "node-red-contrib-web-worldmap": "~2.32.0",
         "node-red-dashboard": "~3.2.3"
+    },
+    "node-red": {
+        "settings": {
+            "flowFile": "flows.json",
+            "credentialsFile": "flows_cred.json"
+        }
     }
 }
