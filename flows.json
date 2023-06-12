@@ -1812,7 +1812,7 @@
         "z": "397fcfee8a3ba738",
         "g": "56a1fe3e942028d4",
         "name": "aggregate results",
-        "func": "function isWorkDone(aggregate){\n    let result = false;\n\n    if (\n        aggregate.blocks !== undefined\n        && aggregate.walls !== undefined\n    ){\n        result = true;\n    }\n\n    return result;\n}\n\nconst aggregateFeedbackHandlers = {\n    \"file-exists\":\n        message => {\n            node.send([\n                    null,\n                    {\n                        name: message.payload.name,\n                        version: message.payload.version,\n                        payload: [\n                            {\n                                name: message.payload.name,\n                                version: message.payload.version\n                            }\n                        ]\n                    }\n                ]\n            );\n        },\n    \"file-parsed\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n\n            if (aggregate === undefined) {\n                flow.get(\"parse-aggregates\")[msg._msgid] = {};\n                aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            }\n\n            if (aggregate.files === undefined){\n                aggregate.files = {};\n            }\n            aggregate.files[message.dxfDrawing.name] = {\n                name: message.dxfDrawing.name,\n                version: message.dxfDrawing.version,\n                ...msg.payload\n            };\n            \n        },\n    \"blocks-ready\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            let file = aggregate.files[message.payload.name];\n            file.blockCount = msg.payload.blockCount;\n            file.blocks = msg.payload.processedBlocks;\n\n            if (isWorkDone(file)){\n                let output = { ...msg };\n                output.fileIndex = {...file};\n                output.payload = file;\n                node.send([output, null]);\n            }\n        },\n    \"walls-ready\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            let file = aggregate.files[message.payload.name];\n            file.wallCount = msg.payload.wallCount;\n            file.walls = msg.payload.walls;\n\n            if (isWorkDone(file)) {\n                let output = { ...msg };\n                output.fileIndex = { ...file };\n                output.payload = file;\n                node.send([output, null]);\n            }\n        }\n}\n\n\n\nif (\n    msg.status !== undefined\n){\n    if (msg.status in aggregateFeedbackHandlers){\n        aggregateFeedbackHandlers[msg.status](msg);\n    }\n}\n",
+        "func": "function isWorkDone(aggregate){\n    let result = false;\n\n    if (\n        aggregate.blocks !== undefined\n        && aggregate.walls !== undefined\n    ){\n        result = true;\n    }\n\n    return result;\n}\n\nconst aggregateFeedbackHandlers = {\n    \"file-exists\":\n        message => {\n            node.send([\n                    null,\n                    {\n                        name: message.payload.name,\n                        version: message.payload.version,\n                        payload: [\n                            {\n                                name: message.payload.name,\n                                version: message.payload.version\n                            }\n                        ]\n                    }\n                ]\n            );\n        },\n    \"file-parsed\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n\n            if (aggregate === undefined) {\n                flow.get(\"parse-aggregates\")[msg._msgid] = {};\n                aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            }\n\n            if (aggregate.files === undefined){\n                aggregate.files = {};\n            }\n            aggregate.files[message.dxfDrawing.name] = {\n                name: message.dxfDrawing.name,\n                version: message.dxfDrawing.version,\n                ...msg.payload\n            };\n            \n        },\n    \"blocks-ready\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            let file = aggregate.files[message.payload.name];\n            file.blockCount = msg.payload.blockCount;\n            file.blocks = msg.payload.processedBlocks;\n\n            if (isWorkDone(file)){\n                let output = { ...msg };\n                output.fileIndex = {...file};\n                output.payload = file;\n                node.send([output, null]);\n                // cleanup\n                delete(flow.get(\"parse-aggregates\")[msg._msgid]);\n            }\n        },\n    \"walls-ready\":\n        message => {\n            let aggregate = flow.get(\"parse-aggregates\")[msg._msgid];\n            let file = aggregate.files[message.payload.name];\n            file.wallCount = msg.payload.wallCount;\n            file.walls = msg.payload.walls;\n\n            if (isWorkDone(file)) {\n                let output = { ...msg };\n                output.fileIndex = { ...file };\n                output.payload = file;\n                node.send([output, null]);\n                // cleanup\n                delete (flow.get(\"parse-aggregates\")[msg._msgid]);\n            }\n        }\n}\n\n\n\nif (\n    msg.status !== undefined\n){\n    if (msg.status in aggregateFeedbackHandlers){\n        aggregateFeedbackHandlers[msg.status](msg);\n    }\n}\n",
         "outputs": 2,
         "noerr": 0,
         "initialize": "// Добавленный здесь код будет исполняться\n// однократно при развертывании узла.\n\nflow.set(\"parse-aggregates\",{});",
@@ -1958,8 +1958,7 @@
         "y": 2780,
         "wires": [
             [
-                "13147d8bfcae139d",
-                "cf5a63bcfc6c7299"
+                "13147d8bfcae139d"
             ]
         ]
     },
@@ -1979,8 +1978,7 @@
         "y": 2740,
         "wires": [
             [
-                "13147d8bfcae139d",
-                "cf5a63bcfc6c7299"
+                "13147d8bfcae139d"
             ]
         ]
     },
@@ -2068,7 +2066,7 @@
         "z": "397fcfee8a3ba738",
         "g": "ad72504d3757e486",
         "name": "feedback",
-        "func": "let savedMsg = flow.get(\"savedBlocks\")[msg._msgid];\n\nif (savedMsg !== undefined) {\n    if (savedMsg.processedBlocks === undefined) {\n        savedMsg.processedBlocks = [];\n    }\n}\n\nsavedMsg.processedBlocks.push(\n    {\n        name: msg.blockInfo.name,\n        type: msg.blockType,\n        blockId: msg.blockInfo.blockId,\n        typeBlockId: msg.payload.typedBlockId\n    }\n);\n\n// check if we are done already\nif (savedMsg.blockCount === savedMsg.processedBlocks.length){\n    node.send(\n        {\n            status: \"blocks-ready\",\n            payload: {\n                ...savedMsg\n            }\n        }\n    );\n    delete(flow.get(\"savedBlocks\")[msg._msgid]);\n}\n",
+        "func": "let savedMsg = flow.get(\"savedBlocks\")[msg._msgid];\n\nif (savedMsg !== undefined) {\n    if (savedMsg.processedBlocks === undefined) {\n        savedMsg.processedBlocks = [];\n    }\n}\n\nsavedMsg.processedBlocks.push(\n    {\n        name: msg.blockInfo.name,\n        type: msg.blockType,\n        blockId: msg.blockInfo.blockId,\n        typeBlockId: msg.payload.typedBlockId\n    }\n);\n\n// check if we are done already\nif (savedMsg.blockCount === savedMsg.processedBlocks.length){\n    node.send(\n        {\n            status: \"blocks-ready\",\n            payload: {\n                ...savedMsg\n            }\n        }\n    );\n\n    // cleanup the context data\n    delete(flow.get(\"savedBlocks\")[msg._msgid]);\n}\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -2505,7 +2503,7 @@
         "z": "397fcfee8a3ba738",
         "g": "6534062c37a4e06b",
         "name": "feedback",
-        "func": "let feedbackAggr = flow.get(\"savedLayers\")[msg._msgid];\n\nif (feedbackAggr.layers === undefined){\n    feedbackAggr.layers = [];\n}\n\nfeedbackAggr.layers.push({...msg.wallInfo});\n\nif (feedbackAggr.layers.length === feedbackAggr.layerCount){\n\n    let processedWalls = feedbackAggr.layers.map(\n        layer => {\n            let output = {\n                type: \"wall\",\n                name: layer.name,\n                id: layer.wallId,\n                dxfName: layer.dxfName,\n                dxfVersion: layer.dxfVersion\n            }\n            return output;\n        }\n    );\n\n    let output = {\n        wallCount: feedbackAggr.layerCount,\n        name: feedbackAggr.name,\n        version: feedbackAggr.version,\n        walls: processedWalls\n    };\n\n    node.send(\n        {\n            status: \"walls-ready\",\n            payload: output\n        }\n    );\n}\n",
+        "func": "let feedbackAggr = flow.get(\"savedLayers\")[msg._msgid];\n\nif (feedbackAggr.layers === undefined){\n    feedbackAggr.layers = [];\n}\n\nfeedbackAggr.layers.push({...msg.wallInfo});\n\nif (feedbackAggr.layers.length === feedbackAggr.layerCount){\n\n    let processedWalls = feedbackAggr.layers.map(\n        layer => {\n            let output = {\n                type: \"wall\",\n                name: layer.name,\n                id: layer.wallId,\n                dxfName: layer.dxfName,\n                dxfVersion: layer.dxfVersion\n            }\n            return output;\n        }\n    );\n\n    let output = {\n        wallCount: feedbackAggr.layerCount,\n        name: feedbackAggr.name,\n        version: feedbackAggr.version,\n        walls: processedWalls\n    };\n\n    node.send(\n        {\n            status: \"walls-ready\",\n            payload: output\n        }\n    );\n    \n    // cleanup the context data\n    delete (flow.get(\"savedLayers\")[msg._msgid]);\n}\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -2571,23 +2569,6 @@
         "statusType": "auto",
         "x": 840,
         "y": 600,
-        "wires": []
-    },
-    {
-        "id": "cf5a63bcfc6c7299",
-        "type": "debug",
-        "z": "397fcfee8a3ba738",
-        "name": "debug 33",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1140,
-        "y": 2740,
         "wires": []
     },
     {
